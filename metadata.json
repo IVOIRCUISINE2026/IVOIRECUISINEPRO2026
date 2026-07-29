@@ -1,0 +1,6 @@
+{
+  "name": "Ivoir'Cuisine Pro",
+  "description": "Une application culinaire moderne et premium spécialisée dans la cuisine ivoirienne et africaine, proposant un programme culinaire de 30 jours, avec liste de courses, calendrier interactif et fiches recettes détaillées.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
