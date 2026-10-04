@@ -9,20 +9,38 @@ import ShoppingListView from "./components/ShoppingListView";
 import ProfileView from "./components/ProfileView";
 import { motion, AnimatePresence } from "motion/react";
 import { 
-  Flame, 
   Calendar, 
   Search, 
-  ShoppingBag, 
   User, 
   Heart, 
-  Wifi, 
   Sparkles, 
-  Bell, 
-  X, 
   BookOpen,
   UtensilsCrossed,
-  Info
+  ArrowRight,
+  ChefHat,
+  Home,
+  Leaf
 } from "lucide-react";
+
+// Faithful SVG Icon for Africa continent outline matching reference image
+function AfricaOutlineIcon({ className = "w-5 h-5 text-[#FF5A00]" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 3.5c2-1 4.5-.5 6 .5 1.8 1.2 2.5 3 2 5-.4 1.5-1.5 2.5-2 4-.6 1.8.2 3.5-.5 5-1 2-3 3-4.5 3-1.5 0-2.5-1-3-2.5C4 16 3 13 4 10.5 4.8 8.5 5.5 5 7 3.5z" />
+    </svg>
+  );
+}
+
+// Faithful SVG Icon for Cloche / Covered Dish matching reference image
+function ClocheCoverIcon({ className = "w-5 h-5 text-[#FF5A00]" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 4a7.5 7.5 0 0 0-7.5 7.5V13h15v-1.5A7.5 7.5 0 0 0 12 4z" />
+      <path d="M3.5 16h17" />
+      <path d="M12 2v2" />
+    </svg>
+  );
+}
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -41,10 +59,6 @@ export default function App() {
     favorites: [],
     history: [{ recipeId: 1, date: "29 Juin 2026" }],
   });
-
-  // Morning daily recipe popup state
-  const [showDailyReminder, setShowDailyReminder] = useState(false);
-  const todayRecipe = RECIPES[0]; // Day 1 as the current recipe of the morning
 
   // Load from LocalStorage on mount
   useEffect(() => {
@@ -81,11 +95,7 @@ export default function App() {
     // Simulate cooking pot boiling loader
     const timer = setTimeout(() => {
       setLoading(false);
-      // Trigger daily reminder banner 2.5 seconds after welcome
-      setTimeout(() => {
-        setShowDailyReminder(true);
-      }, 2500);
-    }, 3000);
+    }, 1200);
 
     return () => clearTimeout(timer);
   }, []);
@@ -104,7 +114,6 @@ export default function App() {
     setCompletedDays(newCompleted);
     localStorage.setItem("ic_completed", JSON.stringify(newCompleted));
 
-    // Update profile completed & cooking history
     const historyEntry = newCompleted.length > completedDays.length
       ? [
           { 
@@ -112,7 +121,7 @@ export default function App() {
             date: new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) 
           },
           ...profile.history
-        ].slice(0, 10) // keep last 10 entries
+        ].slice(0, 10)
       : profile.history;
 
     const updatedProfile = { ...profile, completedDays: newCompleted, history: historyEntry };
@@ -145,7 +154,6 @@ export default function App() {
       completed: false,
     }));
     
-    // Merge or append to current shopping list
     const filteredCurrent = shoppingList.filter(
       (curr) => !listToAdd.some((add) => add.name.toLowerCase() === curr.name.toLowerCase() && add.recipeId === curr.recipeId)
     );
@@ -191,7 +199,6 @@ export default function App() {
 
   const navigateToRecipe = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
-    setActiveTab("calendar"); // Keep tab on calendar context
   };
 
   if (loading) {
@@ -199,123 +206,90 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-brand-cream flex flex-col text-brand-dark overflow-x-hidden relative selection:bg-brand-orange selection:text-white pb-16">
-      {/* Repeating diagonal line backdrop pattern (Professional Polish theme) */}
-      <div className="motif-bg" />
+    <div className="min-h-screen bg-stone-900 flex flex-col text-brand-dark overflow-x-hidden relative selection:bg-[#FF5A00] selection:text-white">
       
-      {/* Dynamic top reminder banner (Daily morning notification mockup) */}
-      <AnimatePresence>
-        {showDailyReminder && (
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            className="bg-brand-orange text-white py-3 px-4 shadow-md sticky top-0 z-40 flex items-center justify-between gap-4"
-            id="daily-reminder-banner"
-          >
-            <div className="flex items-center space-x-2.5 mx-auto">
-              <Bell className="w-5 h-5 animate-bounce shrink-0" />
-              <p className="text-xs md:text-sm font-semibold tracking-wide text-center">
-                <span className="font-mono">Chaque matin :</span> Le repas du jour est prêt ! Découvrez le délicieux <span className="underline">{todayRecipe.name}</span> de Côte d'Ivoire.
-              </p>
-              <button
-                onClick={() => {
-                  setSelectedRecipe(todayRecipe);
-                  setShowDailyReminder(false);
-                }}
-                className="bg-white text-brand-orange text-[11px] font-bold px-3 py-1 rounded-full hover:bg-gray-100 transition-colors shrink-0"
-              >
-                Cuisiner
-              </button>
-            </div>
-            <button
-              onClick={() => setShowDailyReminder(false)}
-              className="text-white/80 hover:text-white shrink-0"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main navigation header */}
-      <header className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-30 px-4 py-3.5">
+      {/* Main navigation header matching exact reference image */}
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-40 px-4 py-2.5">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           
-          {/* Logo & Slogan Title */}
+          {/* Logo & Brand title */}
           <div 
             onClick={() => {
               setSelectedRecipe(null);
               setActiveTab("home");
             }} 
-            className="flex items-center space-x-3 cursor-pointer group select-none"
+            className="flex items-center space-x-2.5 cursor-pointer group select-none"
             id="app-header-logo"
           >
-            {/* Custom high-contrast brand emblem */}
-            <div className="w-10 h-10 rounded-xl bg-brand-orange flex items-center justify-center shadow-md border-b-2 border-brand-orange-dark">
+            {/* Custom orange rounded emblem with crossed utensils */}
+            <div className="w-10 h-10 rounded-2xl bg-[#FF5A00] flex items-center justify-center shadow-xs">
               <UtensilsCrossed className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-serif text-lg md:text-xl font-black tracking-tight text-brand-dark flex items-center">
+              <h1 className="font-serif text-xl sm:text-2xl font-bold tracking-tight text-gray-900 flex items-center">
                 <span>Ivoir'</span>
-                <span className="text-brand-orange">Cuisine</span>
-                <span className="text-brand-green ml-0.5">Pro</span>
+                <span className="text-[#FF5A00]">Cuisine</span>
+                <span className="text-[#2E7D32] ml-0.5">Pro</span>
               </h1>
-              <p className="text-[9px] text-gray-400 font-medium font-mono uppercase tracking-widest hidden sm:block">
-                30 Jours de Saveurs Africaines
-              </p>
             </div>
           </div>
 
-          {/* Desktop navigation links */}
-          <nav className="flex items-center space-x-1">
-            {[
-              { id: "home", label: "Accueil", icon: BookOpen },
-              { id: "calendar", label: "30 Jours", icon: Calendar },
-              { id: "search", label: "Rechercher", icon: Search },
-              { id: "shopping", label: "Courses", icon: ShoppingBag, count: shoppingList.length },
-              { id: "profile", label: "Mon Profil", icon: User },
-            ].map((tab) => {
-              const IconComp = tab.icon;
-              const isActive = activeTab === tab.id && selectedRecipe === null;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setSelectedRecipe(null);
-                    setActiveTab(tab.id as any);
-                  }}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer relative ${
-                    isActive
-                      ? "bg-orange-50 text-brand-orange border border-orange-100"
-                      : "text-gray-500 hover:text-brand-dark hover:bg-gray-50"
-                  }`}
-                  id={`nav-tab-${tab.id}`}
-                >
-                  <IconComp className="w-4 h-4 shrink-0" />
-                  <span className="hidden md:inline">{tab.label}</span>
-                  {tab.count !== undefined && tab.count > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-brand-green text-white text-[9px] font-mono font-black w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-sm">
-                      {tab.count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </nav>
+          {/* Right Action Icons from Reference Image */}
+          <div className="flex items-center space-x-2 sm:space-x-3 text-gray-700">
+            {/* Open book icon inside cream container */}
+            <button
+              onClick={() => {
+                setSelectedRecipe(null);
+                setActiveTab("calendar");
+              }}
+              title="Recettes"
+              className="p-2 sm:p-2.5 rounded-2xl bg-[#FFF8ED] border border-[#FFE8CC] text-[#FF5A00] hover:bg-[#FFEDD5] transition-colors cursor-pointer"
+            >
+              <BookOpen className="w-5 h-5 stroke-[2.2]" />
+            </button>
 
-          {/* Offline Mode indicator badge */}
-          <div className="hidden lg:flex items-center space-x-1.5 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
-            <Wifi className="w-3.5 h-3.5 text-brand-green" />
-            <span className="text-[10px] text-brand-green font-bold uppercase tracking-wider font-mono">Hors Connexion OK</span>
-            <div className="w-1.5 h-1.5 rounded-full bg-brand-green animate-pulse" />
+            {/* Calendar icon */}
+            <button
+              onClick={() => {
+                setSelectedRecipe(null);
+                setActiveTab("calendar");
+              }}
+              title="Calendrier 30 jours"
+              className="p-2 sm:p-2.5 rounded-2xl text-gray-800 hover:text-[#FF5A00] hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <Calendar className="w-5 h-5 stroke-[2]" />
+            </button>
+
+            {/* Search icon */}
+            <button
+              onClick={() => {
+                setSelectedRecipe(null);
+                setActiveTab("search");
+              }}
+              title="Rechercher"
+              className="p-2 sm:p-2.5 rounded-2xl text-gray-800 hover:text-[#FF5A00] hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <Search className="w-5 h-5 stroke-[2]" />
+            </button>
+
+            {/* User Profile icon */}
+            <button
+              onClick={() => {
+                setSelectedRecipe(null);
+                setActiveTab("profile");
+              }}
+              title="Mon Profil"
+              className="p-2 sm:p-2.5 rounded-2xl text-gray-800 hover:text-[#FF5A00] hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <User className="w-5 h-5 stroke-[2]" />
+            </button>
           </div>
 
         </div>
       </header>
 
       {/* Main app routing switch */}
-      <main className="flex-1">
+      <main className="flex-1 flex flex-col">
         <AnimatePresence mode="wait">
           {selectedRecipe !== null ? (
             <motion.div
@@ -323,6 +297,7 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              className="bg-brand-cream min-h-screen"
             >
               <RecipeDetail
                 recipe={selectedRecipe}
@@ -338,215 +313,227 @@ export default function App() {
           ) : (
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
+              className="flex-1 flex flex-col"
             >
+              {/* EXACT HOMEPAGE FROM USER REFERENCE IMAGE */}
               {activeTab === "home" && (
-                <div id="home-welcome-section">
-                  {/* Hero welcome block */}
-                  <div className="relative w-full overflow-hidden bg-brand-dark text-white shadow-2xl">
+                <div id="home-welcome-section" className="relative flex-1 min-h-[calc(100vh-125px)] flex flex-col justify-between overflow-hidden bg-stone-900 text-white select-none">
+                  
+                  {/* Portrait authentic African culinary background matching reference image */}
+                  <img
+                    src="/src/assets/images/authentic_african_banquet_table_1791149581016.jpg"
+                    alt="Table culinaire africaine authentique"
+                    className="absolute inset-0 w-full h-full object-cover object-center"
+                    referrerPolicy="no-referrer"
+                  />
+                  
+                  {/* Subtle dark vignette to enhance text contrast matching reference image */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/85 pointer-events-none" />
+
+                  {/* Top and Center Content from Reference Image */}
+                  <div className="relative z-10 max-w-xl mx-auto px-4 pt-10 sm:pt-14 pb-4 text-center flex flex-col items-center flex-1 justify-center">
                     
-                    {/* Generated photorealistic culinary background cover image */}
-                    <img
-                      src="/src/assets/images/african_food_table_1782757547687.jpg"
-                      alt="African culinary table"
-                      className="absolute inset-0 w-full h-full object-cover opacity-35"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/50 to-transparent" />
+                    {/* Pill Badge */}
+                    <div className="bg-black/50 backdrop-blur-md px-5 py-2 rounded-full border border-white/30 mb-6 sm:mb-8 inline-flex items-center space-x-2.5 shadow-xl">
+                      <Sparkles className="w-4 h-4 text-[#FF9E2C]" />
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-white/95">
+                        Application Officielle Premium
+                      </span>
+                    </div>
 
-                    {/* Content overlays */}
-                    <div className="relative max-w-5xl mx-auto px-6 py-20 md:py-28 text-center flex flex-col items-center">
-                      <motion.div
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.5 }}
-                        className="bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 mb-6 flex items-center space-x-2"
+                    {/* Main Title */}
+                    <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white drop-shadow-2xl mb-4">
+                      Ivoir’Cuisine Pro
+                    </h1>
+
+                    {/* Subtitle */}
+                    <p className="font-serif italic font-bold text-xl sm:text-2xl md:text-3xl text-white drop-shadow-xl max-w-md mx-auto mb-8 sm:mb-10 leading-snug">
+                      "30 jours de saveurs africaines dans votre cuisine."
+                    </p>
+
+                    {/* The 2 CTA buttons side-by-side */}
+                    <div className="flex flex-row items-center justify-center gap-3.5 w-full max-w-md">
+                      <button
+                        onClick={() => setSelectedRecipe(RECIPES[0])}
+                        className="flex-1 py-4 px-6 bg-[#FF5A00] hover:bg-[#E04F00] active:scale-95 text-white font-bold text-base sm:text-lg rounded-full shadow-2xl transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                        id="hero-btn-start"
                       >
-                        <Sparkles className="w-4 h-4 text-brand-orange" />
-                        <span className="text-xs font-mono font-bold uppercase tracking-widest text-brand-cream">
-                          Application Officielle Premium
-                        </span>
-                      </motion.div>
+                        <span>Commencer</span>
+                        <ArrowRight className="w-5 h-5 shrink-0" />
+                      </button>
 
-                      <h2 className="font-serif text-4xl md:text-6xl font-black tracking-tight text-white mb-4">
-                        Ivoir'Cuisine Pro
-                      </h2>
-                      
-                      <p className="font-serif text-lg md:text-2xl text-brand-orange italic font-light max-w-xl leading-relaxed mb-8">
-                        "30 jours de saveurs africaines dans votre cuisine."
-                      </p>
+                      <button
+                        onClick={() => setActiveTab("calendar")}
+                        className="flex-1 py-4 px-6 bg-white hover:bg-gray-100 active:scale-95 text-gray-950 font-bold text-base sm:text-lg rounded-full shadow-2xl transition-all flex items-center justify-center space-x-2 cursor-pointer border border-gray-100"
+                        id="hero-btn-program"
+                      >
+                        <span>Les 30 jours</span>
+                        <Calendar className="w-5 h-5 text-gray-900 shrink-0" />
+                      </button>
+                    </div>
 
-                      <div className="flex flex-wrap justify-center gap-4 max-w-lg w-full">
-                        <button
-                          onClick={() => setActiveTab("calendar")}
-                          className="px-8 py-3.5 bg-brand-orange hover:bg-brand-orange-dark text-white font-bold text-sm rounded-2xl shadow-lg transition-all cursor-pointer flex-1 min-w-[150px]"
-                          id="hero-btn-start"
-                        >
-                          Commencer
-                        </button>
-                        <button
-                          onClick={() => setActiveTab("calendar")}
-                          className="px-8 py-3.5 bg-white text-brand-dark hover:bg-gray-100 font-bold text-sm rounded-2xl shadow transition-all cursor-pointer flex-1 min-w-[150px]"
-                          id="hero-btn-program"
-                        >
-                          Les 30 jours
-                        </button>
+                  </div>
+
+                  {/* Bottom Floating Stats Bar from Reference Image */}
+                  <div className="relative z-10 max-w-lg mx-auto w-full px-4 mb-6 sm:mb-8">
+                    <div className="bg-black/75 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/15 grid grid-cols-3 text-center shadow-2xl">
+                      {/* 12 Pays d'Afrique */}
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="flex items-center justify-center space-x-1.5">
+                          <span className="font-mono text-2xl md:text-3xl font-black text-[#FF5A00]">12</span>
+                          <AfricaOutlineIcon className="w-5 h-5 text-[#FF5A00]" />
+                        </div>
+                        <span className="text-xs text-white/95 font-medium mt-1">Pays d'Afrique</span>
                       </div>
 
-                      {/* Small visual items shortcut bar */}
-                      <div className="grid grid-cols-3 gap-6 max-w-md w-full mt-12 pt-12 border-t border-white/10 text-center">
-                        <div>
-                          <span className="block font-mono text-xl font-black text-brand-orange">12</span>
-                          <span className="text-[10px] text-gray-300 font-medium">Pays d'Afrique</span>
+                      {/* 30 Plats distincts */}
+                      <div className="flex flex-col items-center justify-center border-x border-white/20">
+                        <div className="flex items-center justify-center space-x-1.5">
+                          <span className="font-mono text-2xl md:text-3xl font-black text-[#FF5A00]">30</span>
+                          <ClocheCoverIcon className="w-5 h-5 text-[#FF5A00]" />
                         </div>
-                        <div>
-                          <span className="block font-mono text-xl font-black text-brand-orange">30</span>
-                          <span className="text-[10px] text-gray-300 font-medium">Plats distincts</span>
-                        </div>
-                        <div>
-                          <span className="block font-mono text-xl font-black text-brand-orange">100%</span>
-                          <span className="text-[10px] text-gray-300 font-medium">Hors-ligne</span>
-                        </div>
+                        <span className="text-xs text-white/95 font-medium mt-1">Plats distincts</span>
                       </div>
 
+                      {/* 100% Hors-ligne */}
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="flex items-center justify-center space-x-1.5">
+                          <span className="font-mono text-2xl md:text-3xl font-black text-[#FF5A00]">100%</span>
+                          <Leaf className="w-5 h-5 text-[#FF5A00]" />
+                        </div>
+                        <span className="text-xs text-white/95 font-medium mt-1">Hors-ligne</span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Curated quick shortcuts / bento showcase */}
-                  <div className="max-w-6xl mx-auto px-4 py-12">
-                    <h3 className="font-serif text-2xl font-bold text-brand-dark mb-6 text-center md:text-left">
-                      Parcourez votre Expérience Culinaire
-                    </h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      
-                      {/* Search box bento */}
-                      <div 
-                        onClick={() => setActiveTab("search")}
-                        className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group relative overflow-hidden"
-                      >
-                        <div className="w-12 h-12 rounded-2xl bg-brand-orange/10 flex items-center justify-center text-brand-orange mb-4 group-hover:bg-brand-orange group-hover:text-white transition-all">
-                          <Search className="w-5 h-5" />
-                        </div>
-                        <h4 className="font-serif text-lg font-bold text-brand-dark mb-2">Rechercher une Recette</h4>
-                        <p className="text-xs text-gray-400 leading-relaxed font-light">
-                          Trouvez un plat selon un ingrédient précis (alloco, manioc) ou le pays d'origine de votre choix.
-                        </p>
-                      </div>
-
-                      {/* Favorites shortcut bento */}
-                      <div 
-                        onClick={() => setActiveTab("profile")}
-                        className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group relative overflow-hidden"
-                      >
-                        <div className="w-12 h-12 rounded-2xl bg-brand-orange/10 flex items-center justify-center text-brand-orange mb-4 group-hover:bg-brand-orange group-hover:text-white transition-all">
-                          <Heart className="w-5 h-5" />
-                        </div>
-                        <h4 className="font-serif text-lg font-bold text-brand-dark mb-2">Mes Favoris</h4>
-                        <p className="text-xs text-gray-400 leading-relaxed font-light">
-                          Conservez vos recettes préférées pour pouvoir les cuisiner à nouveau à tout moment.
-                        </p>
-                      </div>
-
-                      {/* Profile box bento */}
-                      <div 
-                        onClick={() => setActiveTab("profile")}
-                        className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group relative overflow-hidden"
-                      >
-                        <div className="w-12 h-12 rounded-2xl bg-brand-green/10 flex items-center justify-center text-brand-green mb-4 group-hover:bg-brand-green group-hover:text-white transition-all">
-                          <User className="w-5 h-5" />
-                        </div>
-                        <h4 className="font-serif text-lg font-bold text-brand-dark mb-2">Mon Profil & Succès</h4>
-                        <p className="text-xs text-gray-400 leading-relaxed font-light">
-                          Suivez votre progression, découvrez vos badges de Chef et gérez les alertes matinales du challenge.
-                        </p>
-                      </div>
-
-                    </div>
-
-                    {/* Featured recipe block of the day */}
-                    <div className="mt-12 bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-xl grid grid-cols-1 md:grid-cols-2">
-                      <div className="h-64 md:h-auto bg-gray-150 relative">
-                        <img
-                          src="/src/assets/images/attieke_poisson_braise_1782757564393.jpg"
-                          alt="Attiéké poisson braisé"
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                        />
-                        <div className="absolute top-4 left-4 bg-brand-orange text-white px-3 py-1 rounded-full text-xs font-mono font-bold uppercase">
-                          Jour 1 - Recommandé
-                        </div>
-                      </div>
-                      <div className="p-8 flex flex-col justify-between">
-                        <div>
-                          <span className="font-mono text-xs font-bold text-brand-green uppercase tracking-wider">Spécialité Ivoirienne</span>
-                          <h4 className="font-serif text-2xl md:text-3xl font-bold text-brand-dark mt-1 mb-3">
-                            Attiéké Poisson Braisé
-                          </h4>
-                          <p className="text-sm text-gray-400 leading-relaxed font-light mb-6">
-                            L'incontournable classique des tablées d'Abidjan : une chair de poisson capitaine parfaitement grillée au charbon, garnie d'une salsa d'oignons rouges croustillants, le tout servi sur un attiéké (manioc) à la texture exceptionnellement légère.
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => setSelectedRecipe(RECIPES[0])}
-                          className="px-6 py-3 bg-brand-green hover:bg-brand-green-light text-white font-bold text-xs rounded-xl shadow-sm transition-all cursor-pointer self-start"
-                        >
-                          Découvrir la Recette
-                        </button>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )}
 
               {activeTab === "calendar" && (
-                <CalendarView
-                  recipes={RECIPES}
-                  completedDays={completedDays}
-                  onSelectRecipe={navigateToRecipe}
-                />
+                <div className="bg-brand-cream min-h-screen pb-16">
+                  <CalendarView
+                    recipes={RECIPES}
+                    completedDays={completedDays}
+                    onSelectRecipe={navigateToRecipe}
+                  />
+                </div>
               )}
 
               {activeTab === "search" && (
-                <SearchView
-                  recipes={RECIPES}
-                  onSelectRecipe={navigateToRecipe}
-                />
+                <div className="bg-brand-cream min-h-screen pb-16">
+                  <SearchView
+                    recipes={RECIPES}
+                    onSelectRecipe={navigateToRecipe}
+                  />
+                </div>
               )}
 
               {activeTab === "shopping" && (
-                <ShoppingListView
-                  items={shoppingList}
-                  onToggleItem={handleToggleShoppingItem}
-                  onDeleteItem={handleDeleteShoppingItem}
-                  onClearCompleted={handleClearCompletedShopping}
-                  onAddCustomItem={handleAddCustomShoppingItem}
-                />
+                <div className="bg-brand-cream min-h-screen pb-16">
+                  <ShoppingListView
+                    items={shoppingList}
+                    onToggleItem={handleToggleShoppingItem}
+                    onDeleteItem={handleDeleteShoppingItem}
+                    onClearCompleted={handleClearCompletedShopping}
+                    onAddCustomItem={handleAddCustomShoppingItem}
+                  />
+                </div>
               )}
 
               {activeTab === "profile" && (
-                <ProfileView
-                  profile={profile}
-                  recipes={RECIPES}
-                  onUpdateProfile={handleUpdateProfile}
-                  onSelectRecipe={navigateToRecipe}
-                  isLocked={isLocked}
-                />
+                <div className="bg-brand-cream min-h-screen pb-16">
+                  <ProfileView
+                    profile={profile}
+                    recipes={RECIPES}
+                    onUpdateProfile={handleUpdateProfile}
+                    onSelectRecipe={navigateToRecipe}
+                    isLocked={isLocked}
+                  />
+                </div>
               )}
             </motion.div>
           )}
         </AnimatePresence>
       </main>
 
-      {/* Elegant Footer */}
-      <footer className="bg-white border-t border-gray-100 py-6 text-center text-xs text-gray-400 font-medium">
-        <p>© 2026 Ivoir'Cuisine Pro. Tous droits réservés.</p>
-        <p className="text-[10px] text-gray-400 font-sans mt-1 tracking-wider">
-          Conçu et développé par Jean Cyrille Ahoret _ 00225 0103697499
-        </p>
+      {/* Bottom Navigation Bar exactly matching Accueil / Recettes / Favoris / Profil from reference image */}
+      <nav className="bg-white border-t border-gray-100 px-4 py-2 flex items-center justify-around shadow-lg sticky bottom-0 z-40 select-none">
+        {/* Accueil */}
+        <button
+          onClick={() => {
+            setSelectedRecipe(null);
+            setActiveTab("home");
+          }}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "home" && selectedRecipe === null
+              ? "text-[#FF5A00]"
+              : "text-gray-400 hover:text-gray-600"
+          }`}
+          id="nav-tab-home"
+        >
+          <Home className="w-5 h-5 mb-0.5 fill-current" />
+          <span>Accueil</span>
+        </button>
+
+        {/* Recettes */}
+        <button
+          onClick={() => {
+            setSelectedRecipe(null);
+            setActiveTab("calendar");
+          }}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "calendar" && selectedRecipe === null
+              ? "text-[#FF5A00]"
+              : "text-gray-400 hover:text-gray-600"
+          }`}
+          id="nav-tab-recipes"
+        >
+          <ChefHat className="w-5 h-5 mb-0.5" />
+          <span>Recettes</span>
+        </button>
+
+        {/* Favoris */}
+        <button
+          onClick={() => {
+            setSelectedRecipe(null);
+            setActiveTab("profile");
+          }}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "profile" && selectedRecipe === null
+              ? "text-[#FF5A00]"
+              : "text-gray-400 hover:text-gray-600"
+          }`}
+          id="nav-tab-favorites"
+        >
+          <Heart className="w-5 h-5 mb-0.5" />
+          <span>Favoris</span>
+        </button>
+
+        {/* Profil */}
+        <button
+          onClick={() => {
+            setSelectedRecipe(null);
+            setActiveTab("profile");
+          }}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeTab === "profile" && selectedRecipe === null
+              ? "text-[#FF5A00]"
+              : "text-gray-400 hover:text-gray-600"
+          }`}
+          id="nav-tab-profile"
+        >
+          <User className="w-5 h-5 mb-0.5" />
+          <span>Profil</span>
+        </button>
+      </nav>
+
+      {/* Developer signature footer */}
+      <footer className="bg-white border-t border-gray-50 py-2.5 text-center text-[10px] text-gray-400 font-sans tracking-wider">
+        Conçu et développé par Jean Cyrille Ahoret _ 00225 0103697499
       </footer>
     </div>
   );
