@@ -205,11 +205,14 @@ export default function App() {
     return <CookingPotLoader />;
   }
 
+  const isHomePage = activeTab === "home" && selectedRecipe === null;
+
   return (
     <div className="min-h-screen bg-stone-900 flex flex-col text-brand-dark overflow-x-hidden relative selection:bg-[#FF5A00] selection:text-white">
       
-      {/* Main navigation header matching exact reference image */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40 px-4 py-2.5">
+      {/* Main navigation header fixed at top (hidden on home page) */}
+      {!isHomePage && (
+        <header className="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-40 px-4 py-2.5 shadow-xs">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           
           {/* Logo & Brand title */}
@@ -287,9 +290,10 @@ export default function App() {
 
         </div>
       </header>
+      )}
 
       {/* Main app routing switch */}
-      <main className="flex-1 flex flex-col">
+      <main className={`flex-1 flex flex-col ${isHomePage ? "" : "pt-[61px] pb-[88px]"}`}>
         <AnimatePresence mode="wait">
           {selectedRecipe !== null ? (
             <motion.div
@@ -297,7 +301,7 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="bg-brand-cream min-h-screen"
+              className="bg-brand-cream flex-1"
             >
               <RecipeDetail
                 recipe={selectedRecipe}
@@ -321,7 +325,7 @@ export default function App() {
             >
               {/* EXACT HOMEPAGE FROM USER REFERENCE IMAGE */}
               {activeTab === "home" && (
-                <div id="home-welcome-section" className="relative flex-1 min-h-[calc(100vh-125px)] flex flex-col justify-between overflow-hidden bg-stone-900 text-white select-none">
+                <div id="home-welcome-section" className="relative flex-1 min-h-screen flex flex-col justify-between overflow-hidden bg-stone-900 text-white select-none">
                   
                   {/* Portrait authentic African culinary background matching reference image */}
                   <img
@@ -414,7 +418,7 @@ export default function App() {
               )}
 
               {activeTab === "calendar" && (
-                <div className="bg-brand-cream min-h-screen pb-16">
+                <div className="bg-brand-cream flex-1 pb-6">
                   <CalendarView
                     recipes={RECIPES}
                     completedDays={completedDays}
@@ -424,7 +428,7 @@ export default function App() {
               )}
 
               {activeTab === "search" && (
-                <div className="bg-brand-cream min-h-screen pb-16">
+                <div className="bg-brand-cream flex-1 pb-6">
                   <SearchView
                     recipes={RECIPES}
                     onSelectRecipe={navigateToRecipe}
@@ -433,7 +437,7 @@ export default function App() {
               )}
 
               {activeTab === "shopping" && (
-                <div className="bg-brand-cream min-h-screen pb-16">
+                <div className="bg-brand-cream flex-1 pb-6">
                   <ShoppingListView
                     items={shoppingList}
                     onToggleItem={handleToggleShoppingItem}
@@ -445,7 +449,7 @@ export default function App() {
               )}
 
               {activeTab === "profile" && (
-                <div className="bg-brand-cream min-h-screen pb-16">
+                <div className="bg-brand-cream flex-1 pb-6">
                   <ProfileView
                     profile={profile}
                     recipes={RECIPES}
@@ -460,8 +464,10 @@ export default function App() {
         </AnimatePresence>
       </main>
 
-      {/* Bottom Navigation Bar exactly matching Accueil / Recettes / Favoris / Profil from reference image */}
-      <nav className="bg-white border-t border-gray-100 px-4 py-2 flex items-center justify-around shadow-lg sticky bottom-0 z-40 select-none">
+      {/* Fixed Bottom Navigation Bar & Signature Footer (hidden on home page) */}
+      {!isHomePage && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 shadow-lg select-none">
+          <nav className="px-4 py-1.5 flex items-center justify-around">
         {/* Accueil */}
         <button
           onClick={() => {
@@ -529,12 +535,14 @@ export default function App() {
           <User className="w-5 h-5 mb-0.5" />
           <span>Profil</span>
         </button>
-      </nav>
+        </nav>
 
-      {/* Developer signature footer */}
-      <footer className="bg-white border-t border-gray-50 py-2.5 text-center text-[10px] text-gray-400 font-sans tracking-wider">
-        Conçu et développé par Jean Cyrille Ahoret _ 00225 0103697499
-      </footer>
+        {/* Developer signature footer */}
+        <footer className="bg-white border-t border-gray-50 py-1.5 text-center text-[10px] text-gray-400 font-sans tracking-wider">
+          Conçu et développé par Jean Cyrille Ahoret _ 00225 0103697499
+        </footer>
+      </div>
+      )}
     </div>
   );
 }
